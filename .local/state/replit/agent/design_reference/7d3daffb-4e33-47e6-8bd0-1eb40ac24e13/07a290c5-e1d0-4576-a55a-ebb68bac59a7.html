@@ -1,0 +1,722 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'primary': {
+                            50: '#eff6ff',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .transition-all { transition: all 0.2s ease-in-out; }
+        .card-shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+        .card-shadow:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900">
+
+    <!-- Login/Register Section -->
+    <!-- @COMPONENT: AuthComponent [handles user authentication] -->
+    <div id="auth-section" class="min-h-screen flex items-center justify-center p-4">
+        <div class="max-w-md w-full bg-white rounded-lg card-shadow p-8">
+            <div class="text-center mb-8">
+                <div class="w-16 h-16 bg-primary-500 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                    <i class="fas fa-project-diagram text-white text-2xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900">Project Manager</h2>
+                <p class="text-slate-600 mt-2">Manage your projects efficiently</p>
+            </div>
+
+            <!-- Login Form -->
+            <div id="login-form" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                    <input type="email" data-mock="true" placeholder="Enter your email" 
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <input type="password" data-mock="true" placeholder="Enter your password"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+
+                <button data-event="click:handleLogin" data-implementation="Should validate credentials with Replit Auth"
+                        class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all font-medium">
+                    Sign In
+                </button>
+
+                <div class="text-center">
+                    <button id="show-register" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                        Don't have an account? Register
+                    </button>
+                </div>
+            </div>
+
+            <!-- Register Form (Hidden by default) -->
+            <div id="register-form" class="space-y-6 hidden">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Full Name</label>
+                    <input type="text" data-mock="true" placeholder="Enter your full name"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                    <input type="email" data-mock="true" placeholder="Enter your email"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Password</label>
+                    <input type="password" data-mock="true" placeholder="Create a password"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+
+                <button data-event="click:handleRegister" data-implementation="Should create account with Replit Auth"
+                        class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all font-medium">
+                    Create Account
+                </button>
+
+                <div class="text-center">
+                    <button id="show-login" class="text-primary-500 hover:text-primary-600 text-sm font-medium">
+                        Already have an account? Sign in
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AuthComponent -->
+
+    <!-- User Dashboard -->
+    <!-- @COMPONENT: UserDashboard [main user interface for project management] -->
+    <div id="user-dashboard" class="hidden min-h-screen bg-slate-50">
+        <!-- Top Navigation -->
+        <nav class="bg-white border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-project-diagram text-white text-sm"></i>
+                        </div>
+                        <h1 class="text-xl font-bold text-slate-900">Project Manager</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center">
+                                <span class="text-slate-600 text-sm font-medium" data-bind="user.initials" data-mock="true">JD</span>
+                            </div>
+                            <span class="text-slate-700 font-medium" data-bind="user.name" data-mock="true">John Doe</span>
+                        </div>
+                        <button data-event="click:handleLogout" data-implementation="Should clear session and redirect to login"
+                                class="text-slate-500 hover:text-slate-700 p-2">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Dashboard Header -->
+            <div class="mb-8">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                        <h2 class="text-3xl font-bold text-slate-900">My Projects</h2>
+                        <p class="mt-2 text-slate-600">Manage and track your project progress</p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <button id="add-project-btn" data-event="click:openAddProjectModal"
+                                class="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all font-medium flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Project
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Statistics -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-primary-100 rounded-lg">
+                            <i class="fas fa-folder text-primary-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-slate-600">Total Projects</p>
+                            <p class="text-2xl font-bold text-slate-900" data-bind="stats.totalProjects" data-mock="true">12</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-green-100 rounded-lg">
+                            <i class="fas fa-check-circle text-green-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-slate-600">Completed</p>
+                            <p class="text-2xl font-bold text-slate-900" data-bind="stats.completedProjects" data-mock="true">8</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-yellow-100 rounded-lg">
+                            <i class="fas fa-clock text-yellow-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-slate-600">In Progress</p>
+                            <p class="text-2xl font-bold text-slate-900" data-bind="stats.inProgressProjects" data-mock="true">3</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg card-shadow">
+                    <div class="flex items-center">
+                        <div class="p-2 bg-orange-100 rounded-lg">
+                            <i class="fas fa-pause-circle text-orange-600"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-slate-600">On Hold</p>
+                            <p class="text-2xl font-bold text-slate-900" data-bind="stats.onHoldProjects" data-mock="true">1</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="bg-white rounded-lg card-shadow">
+                <div class="p-6 border-b border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                        <h3 class="text-lg font-semibold text-slate-900">Recent Projects</h3>
+                        <div class="mt-4 sm:mt-0 flex items-center space-x-3">
+                            <div class="relative">
+                                <input type="text" placeholder="Search projects..." data-mock="true"
+                                       class="pl-10 pr-4 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                    <i class="fas fa-search text-slate-400"></i>
+                                </div>
+                            </div>
+                            <select data-mock="true" class="border border-slate-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option>All Status</option>
+                                <option>Active</option>
+                                <option>Completed</option>
+                                <option>On Hold</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- @MAP: projects.map(project => ( -->
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Project Card 1 -->
+                        <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                            <!-- Modern e-commerce website homepage with shopping cart and product grid -->
+                            <img src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                                 alt="E-commerce website project" class="w-full h-32 object-cover rounded-lg mb-4" data-mock-image="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold text-slate-900" data-bind="project.name" data-mock="true">E-commerce Website</h4>
+                                <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full" data-bind="project.status" data-mock="true">Completed</span>
+                            </div>
+                            <p class="text-slate-600 text-sm mb-3" data-mock="true">Modern online store with payment integration</p>
+                            <div class="flex items-center justify-between">
+                                <a href="#" data-bind="project.link" class="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    View Project
+                                </a>
+                                <div class="flex space-x-2">
+                                    <button data-event="click:editProject" class="text-slate-400 hover:text-slate-600 p-1">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button data-event="click:deleteProject" class="text-slate-400 hover:text-red-600 p-1">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Card 2 -->
+                        <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                            <!-- Mobile app interface showing dashboard with charts and notifications -->
+                            <img src="https://images.unsplash.com/photo-1551650975-87deedd944c3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                                 alt="Mobile app project dashboard" class="w-full h-32 object-cover rounded-lg mb-4" data-mock-image="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold text-slate-900" data-bind="project.name" data-mock="true">Mobile App</h4>
+                                <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full" data-bind="project.status" data-mock="true">Active</span>
+                            </div>
+                            <p class="text-slate-600 text-sm mb-3" data-mock="true">React Native app for task management</p>
+                            <div class="flex items-center justify-between">
+                                <a href="#" data-bind="project.link" class="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    View Project
+                                </a>
+                                <div class="flex space-x-2">
+                                    <button data-event="click:editProject" class="text-slate-400 hover:text-slate-600 p-1">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button data-event="click:deleteProject" class="text-slate-400 hover:text-red-600 p-1">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Project Card 3 -->
+                        <div class="border border-slate-200 rounded-lg p-4 hover:shadow-md transition-all">
+                            <!-- Modern corporate website with professional layout and team photos -->
+                            <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200" 
+                                 alt="Corporate website project" class="w-full h-32 object-cover rounded-lg mb-4" data-mock-image="true">
+                            <div class="flex items-start justify-between mb-2">
+                                <h4 class="font-semibold text-slate-900" data-bind="project.name" data-mock="true">Corporate Website</h4>
+                                <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2 py-1 rounded-full" data-bind="project.status" data-mock="true">On Hold</span>
+                            </div>
+                            <p class="text-slate-600 text-sm mb-3" data-mock="true">Professional business website redesign</p>
+                            <div class="flex items-center justify-between">
+                                <a href="#" data-bind="project.link" class="text-primary-500 hover:text-primary-600 text-sm font-medium flex items-center">
+                                    <i class="fas fa-external-link-alt mr-1"></i>
+                                    View Project
+                                </a>
+                                <div class="flex space-x-2">
+                                    <button data-event="click:editProject" class="text-slate-400 hover:text-slate-600 p-1">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button data-event="click:deleteProject" class="text-slate-400 hover:text-red-600 p-1">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_MAP )) -->
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: UserDashboard -->
+
+    <!-- Admin Dashboard -->
+    <!-- @COMPONENT: AdminDashboard [admin interface for user and project analytics] -->
+    <div id="admin-dashboard" class="hidden min-h-screen bg-slate-50">
+        <!-- Admin Navigation -->
+        <nav class="bg-white border-b border-slate-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <div class="w-8 h-8 bg-red-500 rounded-lg flex items-center justify-center mr-3">
+                            <i class="fas fa-shield-alt text-white text-sm"></i>
+                        </div>
+                        <h1 class="text-xl font-bold text-slate-900">Admin Dashboard</h1>
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2 py-1 rounded-full">Admin</span>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-8 h-8 bg-slate-300 rounded-full flex items-center justify-center">
+                                <span class="text-slate-600 text-sm font-medium" data-bind="admin.initials" data-mock="true">AD</span>
+                            </div>
+                            <span class="text-slate-700 font-medium" data-bind="admin.name" data-mock="true">Admin User</span>
+                        </div>
+                        <button data-event="click:handleLogout" 
+                                class="text-slate-500 hover:text-slate-700 p-2">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Admin Sidebar Navigation -->
+        <div class="flex">
+            <div class="w-64 bg-white min-h-screen border-r border-slate-200">
+                <nav class="mt-8">
+                    <div class="px-4">
+                        <ul class="space-y-2">
+                            <li>
+                                <a href="#" class="bg-primary-50 text-primary-700 flex items-center px-3 py-2 rounded-md font-medium">
+                                    <i class="fas fa-chart-bar mr-3"></i>
+                                    Overview
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center px-3 py-2 rounded-md font-medium">
+                                    <i class="fas fa-users mr-3"></i>
+                                    Users
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center px-3 py-2 rounded-md font-medium">
+                                    <i class="fas fa-project-diagram mr-3"></i>
+                                    Projects
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" class="text-slate-600 hover:text-slate-900 hover:bg-slate-50 flex items-center px-3 py-2 rounded-md font-medium">
+                                    <i class="fas fa-cog mr-3"></i>
+                                    Settings
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Admin Content -->
+            <div class="flex-1 p-8">
+                <div class="mb-8">
+                    <h2 class="text-3xl font-bold text-slate-900">Dashboard Overview</h2>
+                    <p class="mt-2 text-slate-600">Monitor user activity and project statistics</p>
+                </div>
+
+                <!-- Admin Statistics -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg card-shadow">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-blue-100 rounded-lg">
+                                <i class="fas fa-users text-blue-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Total Users</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="admin.stats.totalUsers" data-mock="true">247</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg card-shadow">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-green-100 rounded-lg">
+                                <i class="fas fa-user-check text-green-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Active Users</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="admin.stats.activeUsers" data-mock="true">189</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg card-shadow">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-purple-100 rounded-lg">
+                                <i class="fas fa-project-diagram text-purple-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">Total Projects</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="admin.stats.totalProjects" data-mock="true">1,284</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg card-shadow">
+                        <div class="flex items-center">
+                            <div class="p-2 bg-yellow-100 rounded-lg">
+                                <i class="fas fa-calendar-check text-yellow-600"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-slate-600">This Month</p>
+                                <p class="text-2xl font-bold text-slate-900" data-bind="admin.stats.monthlyProjects" data-mock="true">127</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Table -->
+                <div class="bg-white rounded-lg card-shadow mb-8">
+                    <div class="p-6 border-b border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-semibold text-slate-900">Recent Users</h3>
+                            <div class="flex items-center space-x-3">
+                                <input type="text" placeholder="Search users..." data-mock="true"
+                                       class="px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <button class="bg-primary-500 text-white px-4 py-2 rounded-md hover:bg-primary-600 transition-all font-medium">
+                                    Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Email</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Projects</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Joined</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-slate-200">
+                                <!-- @MAP: users.map(user => ( -->
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-white text-sm font-medium" data-bind="user.initials" data-mock="true">JD</span>
+                                            </div>
+                                            <span class="font-medium text-slate-900" data-bind="user.name" data-mock="true">John Doe</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.email" data-mock="true">john@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-slate-100 text-slate-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.projectCount" data-mock="true">5</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.status" data-mock="true">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.joinedDate" data-mock="true">2024-01-15</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button data-event="click:viewUserDetails" class="text-primary-500 hover:text-primary-700 font-medium text-sm">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-white text-sm font-medium" data-bind="user.initials" data-mock="true">SM</span>
+                                            </div>
+                                            <span class="font-medium text-slate-900" data-bind="user.name" data-mock="true">Sarah Miller</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.email" data-mock="true">sarah@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-slate-100 text-slate-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.projectCount" data-mock="true">8</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-green-100 text-green-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.status" data-mock="true">Active</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.joinedDate" data-mock="true">2024-01-12</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button data-event="click:viewUserDetails" class="text-primary-500 hover:text-primary-700 font-medium text-sm">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-white text-sm font-medium" data-bind="user.initials" data-mock="true">MJ</span>
+                                            </div>
+                                            <span class="font-medium text-slate-900" data-bind="user.name" data-mock="true">Mike Johnson</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.email" data-mock="true">mike@example.com</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-slate-100 text-slate-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.projectCount" data-mock="true">3</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="bg-yellow-100 text-yellow-800 text-sm font-medium px-2 py-1 rounded-full" data-bind="user.status" data-mock="true">Inactive</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-slate-600" data-bind="user.joinedDate" data-mock="true">2024-01-08</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <button data-event="click:viewUserDetails" class="text-primary-500 hover:text-primary-700 font-medium text-sm">
+                                            View Details
+                                        </button>
+                                    </td>
+                                </tr>
+                                <!-- @END_MAP )) -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: AdminDashboard -->
+
+    <!-- Add/Edit Project Modal -->
+    <!-- @COMPONENT: ProjectModal [modal for creating and editing projects] -->
+    <div id="project-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-slate-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-slate-900" id="modal-title">Add New Project</h3>
+                    <button id="close-modal" class="text-slate-400 hover:text-slate-600 p-2">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <form class="p-6 space-y-6" data-implementation="Should handle form submission with validation">
+                <!-- @STATE: projectName:string = '' -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Project Name</label>
+                    <input type="text" data-mock="true" placeholder="Enter project name" required
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+                
+                <!-- @STATE: projectLink:string = '' -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Project Link</label>
+                    <input type="url" data-mock="true" placeholder="https://example.com"
+                           class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                </div>
+                
+                <!-- @STATE: projectStatus:string = 'active' -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                    <select data-mock="true" class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all">
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="on-hold">On Hold</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                
+                <!-- @STATE: projectImage:File = null -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Project Image</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-md p-6 text-center hover:border-primary-400 transition-colors">
+                        <div class="space-y-2">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-slate-400"></i>
+                            <div class="text-sm text-slate-600">
+                                <span class="font-medium text-primary-500 hover:text-primary-600 cursor-pointer">Upload a file</span> or drag and drop
+                            </div>
+                            <p class="text-xs text-slate-500">PNG, JPG, GIF up to 10MB</p>
+                        </div>
+                        <input type="file" accept="image/*" data-implementation="Should handle image upload to Supabase storage" 
+                               class="sr-only" />
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                    <textarea data-mock="true" placeholder="Brief description of the project" rows="3"
+                              class="w-full px-3 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"></textarea>
+                </div>
+                
+                <div class="flex items-center justify-end space-x-3 pt-4">
+                    <button type="button" id="cancel-project" class="px-4 py-2 text-slate-600 border border-slate-300 rounded-md hover:bg-slate-50 transition-all font-medium">
+                        Cancel
+                    </button>
+                    <button type="submit" data-event="submit:handleProjectSubmit" 
+                            class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all font-medium">
+                        Save Project
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: ProjectModal -->
+
+    <!-- Scripts -->
+    <script>
+        (function() {
+            // TODO: Implement business logic, API calls, and state management
+            
+            // Mock navigation between views
+            const showAuthSection = () => {
+                document.getElementById('auth-section').classList.remove('hidden');
+                document.getElementById('user-dashboard').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.add('hidden');
+            };
+            
+            const showUserDashboard = () => {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('user-dashboard').classList.remove('hidden');
+                document.getElementById('admin-dashboard').classList.add('hidden');
+            };
+            
+            const showAdminDashboard = () => {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('user-dashboard').classList.add('hidden');
+                document.getElementById('admin-dashboard').classList.remove('hidden');
+            };
+            
+            // Auth form toggle
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            const showRegisterBtn = document.getElementById('show-register');
+            const showLoginBtn = document.getElementById('show-login');
+            
+            showRegisterBtn?.addEventListener('click', () => {
+                loginForm.classList.add('hidden');
+                registerForm.classList.remove('hidden');
+            });
+            
+            showLoginBtn?.addEventListener('click', () => {
+                registerForm.classList.add('hidden');
+                loginForm.classList.remove('hidden');
+            });
+            
+            // Modal controls
+            const projectModal = document.getElementById('project-modal');
+            const addProjectBtn = document.getElementById('add-project-btn');
+            const closeModalBtn = document.getElementById('close-modal');
+            const cancelProjectBtn = document.getElementById('cancel-project');
+            
+            addProjectBtn?.addEventListener('click', () => {
+                projectModal.classList.remove('hidden');
+            });
+            
+            closeModalBtn?.addEventListener('click', () => {
+                projectModal.classList.add('hidden');
+            });
+            
+            cancelProjectBtn?.addEventListener('click', () => {
+                projectModal.classList.add('hidden');
+            });
+            
+            // Click outside modal to close
+            projectModal?.addEventListener('click', (e) => {
+                if (e.target === projectModal) {
+                    projectModal.classList.add('hidden');
+                }
+            });
+            
+            // Demo navigation - Click on logo to cycle through views
+            let currentView = 0;
+            const views = ['auth', 'user', 'admin'];
+            
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.w-8.h-8') || e.target.matches('i.fa-project-diagram') || e.target.matches('i.fa-shield-alt')) {
+                    currentView = (currentView + 1) % views.length;
+                    switch(views[currentView]) {
+                        case 'auth':
+                            showAuthSection();
+                            break;
+                        case 'user':
+                            showUserDashboard();
+                            break;
+                        case 'admin':
+                            showAdminDashboard();
+                            break;
+                    }
+                }
+            });
+            
+            // Start with auth section
+            showAuthSection();
+        })();
+    </script>
+</body>
+</html>
